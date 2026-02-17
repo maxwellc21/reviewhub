@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Write a review. Login required." />
+  <base href="./" />
+  <title>ReviewHub • Write Review</title>
+
+  <link rel="icon" href="assets/logo.svg" />
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <script defer src="assets/data.js"></script>
+  <script defer src="assets/storage.js"></script>
+  <script defer src="assets/ui.js"></script>
+  <script defer src="assets/write.js"></script>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">
+        <img src="assets/logo.svg" alt="ReviewHub logo" width="28" height="28" />
+        <span>ReviewHub</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a class="navlink" href="index.html">Home</a>
+        <a class="navlink" href="index.html#items">Items</a>
+        <a class="navlink" href="index.html#reviews">Reviews</a>
+        <a class="navlink" href="about.html">About</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="whoami">
+          <span id="statusDot" class="dot"></span>
+          <span class="small" id="whoText">Guest</span>
+        </div>
+        <button class="btn small" id="btnTheme" type="button">🌓 Theme</button>
+        <a class="btn small primary" id="btnLogin" href="login.html">🔐 Login</a>
+        <button class="btn small" id="btnLogout" type="button" hidden>🚪 Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card panel-pad">
+      <h1 class="h1">Write a review</h1>
+      <p class="muted">
+        Only logged-in users can submit reviews. Viewing remains public on the home page.
+      </p>
+
+      <div id="lockedBox" class="callout">
+        <strong>Locked:</strong> You must login first.
+        <div class="row" style="margin-top:10px;">
+          <a class="btn primary" id="goLogin" href="login.html">🔐 Go to Login</a>
+          <a class="btn" href="index.html">← Back Home</a>
+        </div>
+      </div>
+
+      <form
+        id="reviewForm"
+        class="form"
+        action="#"
+        method="POST"
+        enctype="multipart/form-data"
+        novalidate
+        hidden
+      >
+        <input type="hidden" name="review_source" value="reviewhub_multipage_demo" />
+
+        <label>
+          Select item
+          <select name="itemId" id="reviewItemSelect" required>
+            <option value="">Choose…</option>
+          </select>
+        </label>
+
+        <label>
+          Review title
+          <input type="text" name="title" maxlength="60" placeholder="Short summary" required />
+        </label>
+
+        <label>
+          Rating (1–5): <span class="chip"><b id="ratingOut">4</b> / 5</span>
+          <input type="range" name="rating" id="ratingRange" min="1" max="5" value="4" />
+        </label>
+
+        <label>
+          Your review
+          <textarea name="body" maxlength="600" placeholder="What was good? What can improve?" required></textarea>
+        </label>
+
+        <fieldset>
+          <legend>Would you recommend it?</legend>
+          <div class="inline">
+            <label><input type="radio" name="recommend" value="yes" checked /> Yes</label>
+            <label><input type="radio" name="recommend" value="no" /> No</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>What stood out? (checkbox)</legend>
+          <div class="inline">
+            <label><input type="checkbox" name="aspects" value="quality" /> Quality</label>
+            <label><input type="checkbox" name="aspects" value="speed" /> Speed</label>
+            <label><input type="checkbox" name="aspects" value="support" /> Support</label>
+            <label><input type="checkbox" name="aspects" value="value" /> Value</label>
+          </div>
+        </fieldset>
+
+        <label>
+          Upload photo/receipt (optional)
+          <input type="file" name="attachment" accept="image/*" />
+        </label>
+
+        <label class="inline">
+          <input type="checkbox" name="terms" required />
+          I confirm this review is honest and respectful.
+        </label>
+
+        <div class="row">
+          <button class="btn primary" type="submit">✅ Submit</button>
+          <div class="row" style="gap:10px;">
+            <button class="btn ghost" type="reset">↩️ Reset</button>
+            <button class="btn" type="button" id="btnPreview">👀 Preview</button>
+          </div>
+        </div>
+
+        <div id="previewBox" class="callout" style="display:none;">
+          <strong>Preview:</strong>
+          <pre id="previewText" class="pre"></pre>
+        </div>
+
+        <p class="small muted">
+          Demo note: form uses <code>POST</code> and <code>multipart/form-data</code> but is handled in JS (no server).
+        </p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p class="small">&copy; <span id="year"></span> ReviewHub</p>
+      <p class="small muted"><a href="index.html#reviews">See reviews →</a></p>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
