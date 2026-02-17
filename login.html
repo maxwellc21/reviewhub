@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Login to ReviewHub to write reviews." />
+  <base href="./" />
+  <title>ReviewHub • Login</title>
+
+  <link rel="icon" href="assets/logo.svg" />
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <script defer src="assets/data.js"></script>
+  <script defer src="assets/storage.js"></script>
+  <script defer src="assets/ui.js"></script>
+  <script defer src="assets/auth.js"></script>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">
+        <img src="assets/logo.svg" alt="ReviewHub logo" width="28" height="28" />
+        <span>ReviewHub</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a class="navlink" href="index.html">Home</a>
+        <a class="navlink" href="index.html#reviews">Reviews</a>
+        <a class="navlink" href="about.html">About</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="whoami">
+          <span id="statusDot" class="dot"></span>
+          <span class="small" id="whoText">Guest</span>
+        </div>
+        <button class="btn small" id="btnTheme" type="button">🌓 Theme</button>
+        <a class="btn small" href="write-review.html">✍️ Write</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card panel-pad">
+      <h1 class="h1">Login or Register</h1>
+      <p class="muted">
+        You need an account to write a review. Viewing is public.
+      </p>
+      <p class="chip"><b>Demo login:</b> <code>student</code> / <code>1234</code></p>
+
+      <div class="tabs" role="tablist" aria-label="Auth tabs">
+        <button class="tab active" id="tabLogin" type="button" role="tab" aria-selected="true">Login</button>
+        <button class="tab" id="tabRegister" type="button" role="tab" aria-selected="false">Register</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm" class="form" action="#" method="POST">
+        <input type="hidden" name="csrf_token" value="demo_csrf_123" />
+
+        <label>
+          Username
+          <input type="text" name="username" maxlength="32" placeholder="e.g., student" required />
+        </label>
+
+        <label>
+          Password
+          <input type="password" name="password" minlength="4" placeholder="e.g., 1234" required />
+        </label>
+
+        <div class="row">
+          <button class="btn primary" type="submit">🔓 Login</button>
+          <button class="btn ghost" type="reset">↩️ Reset</button>
+        </div>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="registerForm" class="form" action="#" method="POST" hidden>
+        <label>
+          Full name
+          <input type="text" name="fullname" maxlength="60" required />
+        </label>
+
+        <label>
+          Email
+          <input type="email" name="email" required />
+        </label>
+
+        <label>
+          Choose a username
+          <input type="text" name="username" maxlength="32" required />
+        </label>
+
+        <label>
+          Create a password
+          <input type="password" name="password" minlength="4" required />
+        </label>
+
+        <label>
+          Role (select)
+          <select name="role" required>
+            <option value="">Choose…</option>
+            <option value="student">Student</option>
+            <option value="staff">Staff</option>
+            <option value="public">Public</option>
+          </select>
+        </label>
+
+        <fieldset>
+          <legend>Optional preferences</legend>
+          <div class="inline">
+            <label><input type="checkbox" name="news" value="yes" /> Send me updates</label>
+          </div>
+        </fieldset>
+
+        <div class="row">
+          <button class="btn primary" type="submit">🧾 Create account</button>
+          <button class="btn ghost" type="reset">↩️ Reset</button>
+        </div>
+
+        <p class="small muted">For learning only — data stored in localStorage.</p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p class="small">&copy; <span id="year"></span> ReviewHub</p>
+      <p class="small muted"><a href="index.html">← Back to Home</a></p>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
