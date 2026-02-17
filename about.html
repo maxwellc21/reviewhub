@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="About ReviewHub demo app." />
+  <base href="./" />
+  <title>ReviewHub • About</title>
+
+  <link rel="icon" href="assets/logo.svg" />
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <script defer src="assets/data.js"></script>
+  <script defer src="assets/storage.js"></script>
+  <script defer src="assets/ui.js"></script>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">
+        <img src="assets/logo.svg" alt="ReviewHub logo" width="28" height="28" />
+        <span>ReviewHub</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a class="navlink" href="index.html">Home</a>
+        <a class="navlink" href="index.html#items">Items</a>
+        <a class="navlink" href="index.html#reviews">Reviews</a>
+        <a class="navlink active" href="about.html">About</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="whoami">
+          <span id="statusDot" class="dot"></span>
+          <span class="small" id="whoText">Guest</span>
+        </div>
+        <button class="btn small" id="btnTheme" type="button">🌓 Theme</button>
+        <a class="btn small primary" id="btnLogin" href="login.html">🔐 Login</a>
+        <button class="btn small" id="btnLogout" type="button" hidden>🚪 Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card panel-pad">
+      <h1 class="h1">About this demo</h1>
+      <p class="muted">
+        ReviewHub is a static multi-page HTML app. Public users can view reviews; logged-in users can write reviews.
+        Login and data are stored in localStorage for learning.
+      </p>
+
+      <h2 class="h2">Pages</h2>
+      <ul class="muted">
+        <li><b>Home</b> (<code>index.html</code>) — browse items + see reviews</li>
+        <li><b>Login</b> (<code>login.html</code>) — login/register</li>
+        <li><b>Write Review</b> (<code>write-review.html</code>) — gated form</li>
+      </ul>
+
+      <h2 class="h2">What to improve for a real system</h2>
+      <ol class="muted">
+        <li>Server-side authentication (real sessions, password hashing).</li>
+        <li>Database for items/reviews.</li>
+        <li>Moderation + abuse protection.</li>
+      </ol>
+
+      <p class="small muted">
+        External references (open new tab):
+        <a href="https://developer.mozilla.org/en-US/docs/Learn/HTML" target="_blank" rel="noopener">MDN HTML</a> ·
+        <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form" target="_blank" rel="noopener">MDN Forms</a>
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p class="small">&copy; <span id="year"></span> ReviewHub</p>
+      <p class="small muted"><a href="index.html">← Back to Home</a></p>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
