@@ -1,201 +1,146 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="ReviewHub — view goods & services reviews. Login required to write reviews." />
-  <meta name="keywords" content="reviews, goods, services, html forms, tables, semantic html" />
-  <meta name="author" content="Maxie Cletus Tepaiyan" />
-  <base href="./" />
-  <title>ReviewHub • Home</title>
+// assets/write.js
+(function () {
+  const { items } = window.ReviewHubData;
+  const { currentUser, getReviews, setReviews } = window.ReviewHubStorage;
+  const { $, toast, getParam } = window.ReviewHubUI;
 
-  <link rel="icon" href="assets/logo.svg" />
-  <link rel="stylesheet" href="assets/styles.css" />
+  function stars(n) {
+    const full = "★".repeat(n);
+    const empty = "☆".repeat(5 - n);
+    return `${full}${empty}`;
+  }
 
-  <script defer src="assets/data.js"></script>
-  <script defer src="assets/storage.js"></script>
-  <script defer src="assets/ui.js"></script>
-  <script defer src="assets/index.js"></script>
-</head>
+  function getChecked(name) {
+    return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(x => x.value);
+  }
 
-<body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="index.html" aria-label="Go to homepage">
-        <img src="assets/logo.svg" alt="ReviewHub logo" width="28" height="28" />
-        <span>ReviewHub</span>
-      </a>
+  function fillItemSelect() {
+    const sel = $("#reviewItemSelect");
+    if (!sel) return;
+    items.forEach(it => {
+      const opt = document.createElement("option");
+      opt.value = it.id;
+      opt.textContent = `${it.name} (${it.kind})`;
+      sel.appendChild(opt);
+    });
+  }
 
-      <nav class="site-nav" aria-label="Primary navigation">
-        <a class="navlink" href="index.html#items">Goods &amp; Services</a>
-        <a class="navlink" href="index.html#reviews">Reviews</a>
-        <a class="navlink" href="about.html">About</a>
-      </nav>
+  function requireLoginOrRedirect() {
+    const user = currentUser();
+    const locked = $("#lockedBox");
+    const form = $("#reviewForm");
+    const goLogin = $("#goLogin");
 
-      <div class="header-actions">
-        <div class="whoami" title="Login status">
-          <span id="statusDot" class="dot"></span>
-          <span class="small" id="whoText">Guest</span>
-        </div>
+    if (!user) {
+      if (locked) locked.hidden = false;
+      if (form) form.hidden = true;
 
-        <button class="btn small" id="btnTheme" type="button">🌓 Theme</button>
-        <a class="btn small primary" id="btnLogin" href="login.html">🔐 Login</a>
-        <button class="btn small" id="btnLogout" type="button" hidden>🚪 Logout</button>
-      </div>
-    </div>
-  </header>
+      // preserve next destination (including query string)
+      const nextUrl = "write-review.html" + window.location.search;
+      if (goLogin) goLogin.href = `login.html?next=${encodeURIComponent(nextUrl)}`;
+      return false;
+    }
 
-  <main class="container" id="home">
-    <section class="card hero" aria-label="Homepage review summary">
-      <div>
-        <h1>Read reviews — <span class="accent">log in</span> to write one.</h1>
-        <p class="muted">
-          Anyone can view items and reviews. Writing reviews is login-protected.
-          Data is saved to <code>localStorage</code> for demo purposes.
-        </p>
+    if (locked) locked.hidden = true;
+    if (form) form.hidden = false;
+    return true;
+  }
 
-        <ul class="bullets">
-          <li>Browse items and reviews (public).</li>
-          <li>Login/register to submit a review.</li>
-          <li>Works on GitHub + Replit as a static site.</li>
-        </ul>
+  function preselectItemFromQuery() {
+    const itemId = getParam("item");
+    const sel = $("#reviewItemSelect");
+    if (itemId && sel) sel.value = itemId;
+  }
 
-        <div class="cta">
-          <a class="btn primary" href="#items">🔎 Browse items</a>
-          <a class="btn" id="btnWriteHero" href="write-review.html">✍️ Write a review</a>
-        </div>
+  function bindForm() {
+    const ratingRange = $("#ratingRange");
+    const ratingOut = $("#ratingOut");
 
-        <div class="chips">
-          <span class="chip"><b>Demo login:</b> <code>student</code> / <code>1234</code></span>
-          <span class="chip"><b>Note:</b> Public viewing is open; writing is gated.</span>
-        </div>
-      </div>
+    ratingRange?.addEventListener("input", () => {
+      if (ratingOut) ratingOut.textContent = ratingRange.value;
+    });
 
-      <aside class="card panel-pad" aria-label="Ratings snapshot">
-        <div class="row">
-          <h2 class="h2">Ratings snapshot</h2>
-          <span class="badge" id="totalReviewsBadge">0 reviews</span>
-        </div>
+    $("#btnPreview")?.addEventListener("click", () => {
+      const f = $("#reviewForm");
+      if (!f) return;
 
-        <table aria-label="Item rating table">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Avg</th>
-              <th>Count</th>
-            </tr>
-          </thead>
-          <tbody id="statsBody">
-            <tr><td class="muted">Loading…</td><td class="muted">—</td><td class="muted">—</td></tr>
-          </tbody>
-        </table>
+      const it = items.find(x => x.id === f.itemId.value);
+      const title = f.title.value.trim();
+      const rating = Number(f.rating.value || 1);
+      const body = f.body.value.trim();
+      const recommend = f.recommend.value;
+      const aspects = getChecked("aspects");
 
-        <p class="small muted" style="margin-top:10px">
-          Quick links:
-          <a href="#reviews">Latest reviews</a> · <a href="about.html">How it works</a>
-        </p>
-      </aside>
-    </section>
+      const text = [
+        `Item: ${it ? it.name : "(none)"}`,
+        `Title: ${title || "(none)"}`,
+        `Rating: ${stars(Math.max(1, Math.min(5, rating)))}`,
+        `Recommend: ${recommend}`,
+        `Aspects: ${aspects.length ? aspects.join(", ") : "(none)"}`,
+        `Body: ${body || "(none)"}`
+      ].join("\n");
 
-    <hr class="hr" />
+      $("#previewText").textContent = text;
+      $("#previewBox").style.display = "block";
+    });
 
-    <section id="items" aria-label="Goods and services list">
-      <div class="section-head">
-        <h2 class="h2">Goods &amp; Services that need reviews</h2>
-        <div class="filters">
-          <div class="field">
-            <span>Search</span>
-            <input id="searchItems" type="search" placeholder="e.g., Wi-Fi, Laptop, Coffee" />
-          </div>
-          <div class="field">
-            <span>Category</span>
-            <select id="filterCategory">
-              <option value="all">All</option>
-            </select>
-          </div>
-        </div>
-      </div>
+    $("#reviewForm")?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const user = currentUser();
+      if (!user) {
+        toast("Login required.");
+        return;
+      }
 
-      <div class="grid" id="itemGrid" aria-live="polite"></div>
-    </section>
+      const f = e.currentTarget;
 
-    <hr class="hr" />
+      const itemId = f.itemId.value;
+      const title = f.title.value.trim();
+      const rating = Number(f.rating.value);
+      const body = f.body.value.trim();
+      const recommend = f.recommend.value;
+      const aspects = getChecked("aspects");
+      const termsOk = f.terms.checked;
 
-    <section id="reviews" aria-label="Reviews section">
-      <div class="section-head">
-        <h2 class="h2">Latest reviews</h2>
-        <div class="filters">
-          <div class="field">
-            <span>Show reviews for</span>
-            <select id="filterItemReviews">
-              <option value="all">All items</option>
-            </select>
-          </div>
-          <button class="btn small" id="btnResetDemo" type="button">🧹 Reset demo data</button>
-        </div>
-      </div>
+      if (!itemId || !title || !body || !termsOk) {
+        toast("Please complete required fields and accept the checkbox.");
+        return;
+      }
+      if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
+        toast("Rating must be between 1 and 5.");
+        return;
+      }
 
-      <div class="two-col">
-        <article class="card panel-pad" aria-label="Review feed">
-          <div class="row">
-            <div>
-              <div class="muted small">Public feed</div>
-              <div class="strong">What people are saying</div>
-            </div>
-            <span class="badge" id="feedCount">0 shown</span>
-          </div>
+      const reviews = getReviews();
+      reviews.push({
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "_r"),
+        itemId,
+        user: user.username,
+        rating,
+        title,
+        body,
+        recommend,
+        aspects,
+        createdAt: Date.now()
+      });
 
-          <hr class="hr" />
+      setReviews(reviews);
 
-          <div id="reviewsFeed"></div>
+      f.reset();
+      $("#ratingRange").value = "4";
+      $("#ratingOut").textContent = "4";
+      $("#previewBox").style.display = "none";
 
-          <hr class="hr" />
+      toast("Review submitted ✅");
+      // send them back to home reviews section
+      window.location.href = "index.html#reviews";
+    });
+  }
 
-          <div class="small muted">
-            <b>How reviews work:</b>
-            <ol>
-              <li>Choose an item.</li>
-              <li>Rate 1–5 stars.</li>
-              <li>Write details (good / improve).</li>
-            </ol>
-          </div>
-        </article>
-
-        <aside class="card panel-pad" aria-label="Write a review teaser">
-          <div class="row">
-            <div>
-              <div class="muted small">Want to add your review?</div>
-              <div class="strong">Login required</div>
-            </div>
-            <span class="badge" id="writeBadge">Locked</span>
-          </div>
-
-          <hr class="hr" />
-
-          <div class="callout" id="writeLockedMsg">
-            <strong>Locked:</strong> Please login to write a review.
-          </div>
-
-          <div class="callout ok" id="writeUnlockedMsg" hidden>
-            <strong>Unlocked:</strong> You’re logged in — go write your review.
-          </div>
-
-          <div class="row" style="margin-top: 12px;">
-            <a class="btn primary" href="write-review.html">✍️ Write a review</a>
-            <a class="btn" href="login.html">🔐 Login</a>
-          </div>
-        </aside>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <p class="small">&copy; <span id="year"></span> ReviewHub — static multi-page demo.</p>
-      <p class="small muted">Client-side demo auth (localStorage) — not real security.</p>
-    </div>
-  </footer>
-
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-</body>
-</html>
+  document.addEventListener("DOMContentLoaded", () => {
+    fillItemSelect();
+    preselectItemFromQuery();
+    const ok = requireLoginOrRedirect();
+    if (ok) bindForm();
+  });
+})();
